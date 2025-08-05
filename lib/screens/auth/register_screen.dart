@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Import package http
-import 'dart:convert'; // Import untuk json encoding
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-import 'package:piksel_mos/screens/auth/verification_screen.dart'; // Import halaman verifikasi
+import 'package:piksel_mos/screens/auth/verification_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,7 +12,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // 3a. Persiapan State Management
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -22,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Fungsi untuk membersihkan controller saat widget tidak lagi digunakan
   @override
   void dispose() {
     _nameController.dispose();
@@ -33,9 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // 3b. Implementasi Logika Tombol "DAFTAR"
   Future<void> _register() async {
-    // 1. Validasi dasar di sisi aplikasi
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _phoneController.text.isEmpty ||
@@ -53,16 +49,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // 2. Mulai loading
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      // 3. Kirim Data ke Server (Koneksi Nyata)
       final url = Uri.parse('http://178.128.18.30:3000/api/auth/register');
-      final headers = {'Content-Type': 'application/json; charset=UTF-8'};
+      final headers = {'Content-Type': 'application/json; charset=UTF-t'};
       final body = json.encode({
         'name': _nameController.text,
         'email': _emailController.text,
@@ -72,32 +66,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final response = await http.post(url, headers: headers, body: body);
 
-      // 4. Tangani Respons Server
-      if (response.statusCode == 201) {
-        // Pendaftaran berhasil
-        if (mounted) { // Cek apakah widget masih ada di tree
+      if (mounted) {
+        if (response.statusCode == 201) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const VerificationScreen()),
-          );
+            MaterialPageRoute(
+              builder: (context) => VerificationScreen(
+                phoneNumber: _phoneController.text,
+              ), // Kurung tutup untuk VerificationScreen
+            ), // Kurung tutup untuk MaterialPageRoute
+          ); // Titik koma setelah semua kurung ditutup
+        } else {
+          final responseData = json.decode(response.body);
+          setState(() {
+            _errorMessage = responseData['message'] ?? 'Terjadi kesalahan saat registrasi.';
+          });
         }
-      } else {
-        // Pendaftaran gagal
-        final responseData = json.decode(response.body);
-        setState(() {
-          _errorMessage = responseData['message'] ?? 'Terjadi kesalahan saat registrasi.';
-        });
       }
     } catch (e) {
-      // Tangani error koneksi
-      setState(() {
-        _errorMessage = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+        });
+      }
     } finally {
-      // 5. Selesai Loading
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -105,7 +102,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // ... (AppBar tetap sama)
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          )
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -114,9 +114,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ... (Judul dan teks lainnya tetap sama)
-
-                // Hubungkan controller ke setiap TextField
+                const SizedBox(height: 24),
+                const Text(
+                  'Buat Akun Baru',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 32),
                 TextField(
                   controller: _nameController,
                   decoration: const InputDecoration(labelText: 'Nama Lengkap', border: OutlineInputBorder()),
@@ -136,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _passwordController,
-                  obscureText: true, // Untuk simplicity, fitur show/hide dihilangkan sementara
+                  obscureText: true,
                   decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 16),
@@ -146,8 +149,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: const InputDecoration(labelText: 'Konfirmasi Password', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 16),
-
-                // c. Feedback Visual di UI (Error Message)
                 if (_errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -157,17 +158,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-
-                // Tombol Aksi "DAFTAR"
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _register, // Tombol disable saat loading
+                  onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
-                  // c. Feedback Visual di UI (Loading Indicator)
                       ? const SizedBox(
                     height: 20,
                     width: 20,
@@ -178,7 +176,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   )
                       : const Text('DAFTAR'),
                 ),
-                // ... (Sisa widget tetap sama)
               ],
             ),
           ),
