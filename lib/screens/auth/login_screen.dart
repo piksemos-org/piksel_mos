@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'; // BENAR
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:piksel_mos/screens/auth/register_screen.dart';
 import 'package:piksel_mos/screens/auth/forgot_password_screen.dart';
-import 'package:piksel_mos/screens/auth/verification_screen.dart'; // Pastikan import ini ada
+import 'package:piksel_mos/screens/auth/verification_screen.dart';
 import 'package:piksel_mos/screens/home/home_screen.dart';
 import 'package:piksel_mos/utils/validators.dart';
 
@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final identifier = _emailPhoneController.text;
         final password = _passwordController.text;
 
-        final url = Uri.parse('http://178.128.18.30:3000/api/auth/login');
+        final url = Uri.parse('http://10.0.2.2:3000/api/auth/login');
         final headers = {'Content-Type': 'application/json; charset=UTF-8'};
         final body = json.encode({
           'identifier': identifier,
@@ -72,29 +72,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (mounted) {
           final responseData = json.decode(response.body);
+
+          // --- PERUBAHAN UTAMA DI SINI ---
           if (response.statusCode == 200) {
-            Navigator.pushReplacement(
+            // a. Login Sukses
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (route) => false,
             );
           } else if (response.statusCode == 403) {
-            // --- PERUBAHAN UTAMA DI SINI ---
-            // Arahkan ke halaman verifikasi jika akun belum terverifikasi
+            // b. Akun Belum Diverifikasi
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => VerificationScreen(
-                  phoneNumber: _emailPhoneController.text, // Kirim nomor telepon
+                  phoneNumber: _emailPhoneController.text, // Mengirim nomor telepon
                 ),
               ),
             );
-          } else {
-            // Untuk error lain (misal: 401 Kredensial Salah)
+          } else if (response.statusCode == 401) {
+            // c. Kredensial Salah
             setState(() {
-              _feedbackMessage = responseData['message'] ?? 'Terjadi kesalahan.';
+              _feedbackMessage = responseData['message'] ?? 'Email/Telepon atau Password salah.';
+              _feedbackColor = Colors.red;
+            });
+          } else {
+            // d. Error Lainnya
+            setState(() {
+              _feedbackMessage = responseData['message'] ?? 'Terjadi kesalahan pada server.';
               _feedbackColor = Colors.red;
             });
           }
+          // --- AKHIR PERUBAHAN ---
         }
       } catch (e) {
         if (mounted) {
