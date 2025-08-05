@@ -5,7 +5,7 @@ import 'dart:convert';
 
 import 'package:piksel_mos/screens/auth/register_screen.dart';
 import 'package:piksel_mos/screens/auth/forgot_password_screen.dart';
-import 'package:piksel_mos/screens/home/home_screen.dart'; // Import halaman home
+import 'package:piksel_mos/screens/home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? initialMessage;
@@ -16,21 +16,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 3a. State Management
   final _emailPhoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-
   bool _isLoading = false;
-  String? _errorMessage;
-  String? _notificationMessage;
+
+  // 3a. State Management Pesan yang Baru
+  String? _feedbackMessage;
+  Color _feedbackColor = Colors.red; // Default warna untuk error
 
   @override
   void initState() {
     super.initState();
-    // Menampilkan pesan awal jika ada (misalnya setelah verifikasi berhasil)
     if (widget.initialMessage != null) {
-      // Menampilkan SnackBar setelah frame pertama selesai build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -49,21 +47,17 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // 3b. Implementasi fungsi _performLogin()
   Future<void> _performLogin() async {
-    // 1. Mulai Loading
+    // 3b. Reset state pesan di awal
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
-      _notificationMessage = null;
+      _feedbackMessage = null;
     });
 
     try {
-      // 2. Ambil Data
       final identifier = _emailPhoneController.text;
       final password = _passwordController.text;
 
-      // 3. Kirim ke Server
       final url = Uri.parse('http://178.128.18.30:3000/api/auth/login');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({
@@ -74,40 +68,35 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await http.post(url, headers: headers, body: body);
       final responseData = json.decode(response.body);
 
-      // 4. Tangani Respons
       if (mounted) {
         if (response.statusCode == 200) {
-          // --- Sukses ---
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else if (response.statusCode == 403) {
-          // --- Belum Terverifikasi ---
+          // 3b. Update state untuk status "belum terverifikasi"
           setState(() {
-            _notificationMessage = responseData['message'] ?? 'Akun Anda belum terverifikasi.';
-          });
-        } else if (response.statusCode == 401) {
-          // --- Kredensial Salah ---
-          setState(() {
-            _errorMessage = responseData['message'] ?? 'Email/Telepon atau Password salah.';
+            _feedbackMessage = responseData['message'] ?? 'Akun Anda belum terverifikasi.';
+            _feedbackColor = Colors.orange; // Warna oranye untuk peringatan
           });
         } else {
-          // --- Error Lain dari Server ---
+          // 3b. Update state untuk semua jenis error
           setState(() {
-            _errorMessage = responseData['message'] ?? 'Terjadi kesalahan tidak diketahui.';
+            _feedbackMessage = responseData['message'] ?? 'Terjadi kesalahan.';
+            _feedbackColor = Colors.red; // Warna merah untuk error
           });
         }
       }
     } catch (e) {
-      // --- Error Koneksi ---
       if (mounted) {
+        // 3b. Update state untuk error koneksi
         setState(() {
-          _errorMessage = 'Gagal terhubung ke server. Periksa koneksi Anda.';
+          _feedbackMessage = 'Gagal terhubung ke server. Periksa koneksi Anda.';
+          _feedbackColor = Colors.red;
         });
       }
     } finally {
-      // 5. Selesai Loading
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -115,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -135,17 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                // c. Feedback Visual (Pesan Notifikasi - Kuning/Oranye)
-                if (_notificationMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      _notificationMessage!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-
                 TextField(
                   controller: _emailPhoneController,
                   decoration: const InputDecoration(
@@ -163,7 +140,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -173,21 +152,43 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                // ... (Link Lupa Password tetap sama) ...
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                      );
+                    },
+                    child: const Text(
+                      'Lupa Password?',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
 
-                // c. Feedback Visual (Pesan Error - Merah)
-                if (_errorMessage != null)
+                // 3c. Lokasi Tampilan Pesan Feedback yang Baru dan Tunggal
+                if (_feedbackMessage != null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
+                    padding: const EdgeInsets.only(bottom: 12.0),
                     child: Text(
-                      _errorMessage!,
+                      _feedbackMessage!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                      style: TextStyle(
+                        color: _feedbackColor, // Menggunakan warna dinamis
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
 
-                // c. Feedback Visual (Tombol Loading)
                 ElevatedButton(
                   onPressed: _isLoading ? null : _performLogin,
                   style: ElevatedButton.styleFrom(
@@ -203,7 +204,56 @@ class _LoginScreenState extends State<LoginScreen> {
                   )
                       : const Text('MASUK'),
                 ),
-                // ... (Sisa UI tetap sama)
+                const SizedBox(height: 24),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text('atau', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    print('Tombol Lanjutkan dengan Google ditekan');
+                  },
+                  icon: const Icon(Icons.g_mobiledata_rounded),
+                  label: const Text('Lanjutkan dengan Google'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: Colors.grey.shade400),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Belum punya akun?',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                        );
+                      },
+                      child: const Text(
+                        'Daftar di sini',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
