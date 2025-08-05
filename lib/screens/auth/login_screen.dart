@@ -1,12 +1,13 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // BENAR
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:piksel_mos/screens/auth/register_screen.dart';
 import 'package:piksel_mos/screens/auth/forgot_password_screen.dart';
+import 'package:piksel_mos/screens/auth/verification_screen.dart'; // Pastikan import ini ada
 import 'package:piksel_mos/screens/home/home_screen.dart';
-import 'package:piksel_mos/utils/validators.dart'; // 1. Impor file validators
+import 'package:piksel_mos/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? initialMessage;
@@ -17,7 +18,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 2. Kunci untuk mengelola state Form
   final _formKey = GlobalKey<FormState>();
 
   final _emailPhoneController = TextEditingController();
@@ -51,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _performLogin() async {
-    // 3. Trigger validasi pada semua field sebelum mengirim
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isLoading = true;
@@ -70,18 +69,30 @@ class _LoginScreenState extends State<LoginScreen> {
         });
 
         final response = await http.post(url, headers: headers, body: body);
-        final responseData = json.decode(response.body);
 
         if (mounted) {
+          final responseData = json.decode(response.body);
           if (response.statusCode == 200) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
+          } else if (response.statusCode == 403) {
+            // --- PERUBAHAN UTAMA DI SINI ---
+            // Arahkan ke halaman verifikasi jika akun belum terverifikasi
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VerificationScreen(
+                  phoneNumber: _emailPhoneController.text, // Kirim nomor telepon
+                ),
+              ),
+            );
           } else {
+            // Untuk error lain (misal: 401 Kredensial Salah)
             setState(() {
-              _feedbackMessage = responseData['message'] ?? 'Terjadi kesalahan tidak diketahui.';
-              _feedbackColor = (response.statusCode == 403) ? Colors.orange : Colors.red;
+              _feedbackMessage = responseData['message'] ?? 'Terjadi kesalahan.';
+              _feedbackColor = Colors.red;
             });
           }
         }
@@ -109,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            // 2. Bungkus kolom dengan Form
             child: Form(
               key: _formKey,
               autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -124,7 +134,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 48),
 
-                  // 4. Ubah TextField menjadi TextFormField
                   TextFormField(
                     controller: _emailPhoneController,
                     decoration: const InputDecoration(
@@ -132,16 +141,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    // Logika validasi gabungan
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Kolom ini tidak boleh kosong.';
                       }
-                      // Cek apakah input mengandung '@', jika ya, validasi sebagai email
                       if (value.contains('@')) {
                         return Validators.validateEmail(value);
                       }
-                      // Jika tidak, validasi sebagai nomor telepon
                       return Validators.validatePhone(value);
                     },
                   ),
@@ -165,7 +171,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
-                    // Validasi password sederhana (hanya cek kosong)
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Password tidak boleh kosong.';

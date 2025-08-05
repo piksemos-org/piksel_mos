@@ -42,6 +42,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   void _startCooldownTimer() {
     setState(() {
       _canResend = false;
+      _cooldownSeconds = 60;
     });
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -53,7 +54,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
         timer.cancel();
         setState(() {
           _canResend = true;
-          _cooldownSeconds = 60;
         });
       } else {
         setState(() {
@@ -63,6 +63,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
   }
 
+  // --- FUNGSI UTAMA YANG DIREVISI ---
   Future<void> _verifyOtp() async {
     if (_otpController.text.length != 6) {
       setState(() {
@@ -77,6 +78,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
 
     try {
+      // 3b. Implementasi Panggilan API
       final url = Uri.parse('http://178.128.18.30:3000/api/auth/verify-otp');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({
@@ -86,8 +88,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       final response = await http.post(url, headers: headers, body: body);
 
-      if (response.statusCode == 200) {
-        if (mounted) {
+      if (mounted) {
+        if (response.statusCode == 200) {
+          // --- SUKSES ---
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Verifikasi berhasil! Silakan login.'),
@@ -95,26 +98,32 @@ class _VerificationScreenState extends State<VerificationScreen> {
             ),
           );
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(
+                initialMessage: "Verifikasi sukses! Anda sekarang dapat masuk.",
+              ),
+            ),
                 (Route<dynamic> route) => false,
           );
+        } else {
+          // --- GAGAL ---
+          final responseData = json.decode(response.body);
+          setState(() {
+            _errorMessage = responseData['message'] ?? 'Kode OTP salah atau tidak valid.';
+            _failedAttempts++;
+            if (_failedAttempts >= 3) {
+              _startCooldownTimer();
+              _failedAttempts = 0;
+            }
+          });
         }
-      } else {
-        final responseData = json.decode(response.body);
-        setState(() {
-          _errorMessage =
-              responseData['message'] ?? 'Kode OTP salah atau tidak valid.';
-          _failedAttempts++;
-          if (_failedAttempts >= 3) {
-            _startCooldownTimer();
-            _failedAttempts = 0;
-          }
-        });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Gagal terhubung ke server. Periksa koneksi Anda.';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Gagal terhubung ke server. Periksa koneksi Anda.';
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -127,11 +136,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> _sendOtpAgain() async {
     if (!_canResend) return;
 
+    // (Logika kirim ulang OTP tetap sama, diasumsikan sudah terhubung ke server)
     try {
       final url = Uri.parse('http://178.128.18.30:3000/api/auth/resend-otp');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({'phoneNumber': widget.phoneNumber});
-
       final response = await http.post(url, headers: headers, body: body);
 
       if (mounted) {
@@ -164,7 +173,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
     }
   }
 
-  // --- build() method YANG BENAR ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
