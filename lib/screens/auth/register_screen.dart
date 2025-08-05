@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:piksel_mos/screens/auth/verification_screen.dart';
-import 'package:piksel_mos/utils/validators.dart'; // 1. Impor file validators
+import 'package:piksel_mos/utils/validators.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,7 +13,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // 2. Kunci untuk mengelola state Form
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -24,6 +23,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isLoading = false;
   String? _serverErrorMessage;
+
+  // --- PENAMBAHAN: State untuk visibilitas password ---
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  // --- AKHIR PENAMBAHAN ---
 
   @override
   void dispose() {
@@ -36,7 +40,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    // 3. Trigger validasi pada semua field
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isLoading = true;
@@ -68,14 +71,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
           } else {
             final responseData = json.decode(response.body);
             setState(() {
-              _serverErrorMessage = responseData['message'] ?? 'Terjadi kesalahan saat registrasi.';
+              _serverErrorMessage =
+                  responseData['message'] ?? 'Terjadi kesalahan saat registrasi.';
             });
           }
         }
       } catch (e) {
         if (mounted) {
           setState(() {
-            _serverErrorMessage = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+            _serverErrorMessage =
+            'Gagal terhubung ke server. Periksa koneksi internet Anda.';
           });
         }
       } finally {
@@ -101,10 +106,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            // 2. Bungkus kolom dengan Form
             child: Form(
               key: _formKey,
-              // Validasi akan berjalan saat pengguna berinteraksi dengan field
               autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -115,56 +118,96 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 32),
-                  // 4. Ubah TextField menjadi TextFormField dan terapkan validasi
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Nama Lengkap', border: OutlineInputBorder()),
-                    // 5. Terapkan formatter
+                    decoration: const InputDecoration(
+                        labelText: 'Nama Lengkap', border: OutlineInputBorder()),
                     inputFormatters: [Formatters.nameCapitalizationFormatter],
                     validator: Validators.validateName,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                        labelText: 'Email', border: OutlineInputBorder()),
                     keyboardType: TextInputType.emailAddress,
                     validator: Validators.validateEmail,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _phoneController,
-                    decoration: const InputDecoration(labelText: 'Nomor Telepon', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                        labelText: 'Nomor Telepon', border: OutlineInputBorder()),
                     keyboardType: TextInputType.phone,
                     validator: Validators.validatePhone,
                   ),
                   const SizedBox(height: 16),
+
+                  // --- PERUBAHAN: TextFormField Password ---
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
                     validator: (value) => Validators.validatePassword(
                       value,
                       name: _nameController.text,
                       email: _emailController.text,
                     ),
                   ),
+                  // --- AKHIR PERUBAHAN ---
+
                   const SizedBox(height: 16),
+
+                  // --- PERUBAHAN: TextFormField Konfirmasi Password ---
                   TextFormField(
                     controller: _confirmPasswordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Konfirmasi Password', border: OutlineInputBorder()),
+                    obscureText: !_isConfirmPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Konfirmasi Password',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isConfirmPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
                     validator: (value) => Validators.validateConfirmPassword(
                       _passwordController.text,
                       value,
                     ),
                   ),
+                  // --- AKHIR PERUBAHAN ---
+
                   const SizedBox(height: 16),
                   if (_serverErrorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Text(
                         _serverErrorMessage!,
-                        style: const TextStyle(color: Colors.red, fontSize: 14),
+                        style:
+                        const TextStyle(color: Colors.red, fontSize: 14),
                         textAlign: TextAlign.center,
                       ),
                     ),
