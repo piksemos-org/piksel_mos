@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:piksel_mos/screens/auth/register_screen.dart';
 import 'package:piksel_mos/screens/auth/forgot_password_screen.dart';
 import 'package:piksel_mos/screens/auth/verification_screen.dart';
+import 'package:piksel_mos/screens/onboarding/onboarding_screen.dart';
 import 'package:piksel_mos/screens/home/home_screen.dart';
 import 'package:piksel_mos/utils/validators.dart';
 
@@ -50,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // --- FUNGSI LOGIN DENGAN LOGIKA BARU ---
   Future<void> _performLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
@@ -61,50 +63,60 @@ class _LoginScreenState extends State<LoginScreen> {
         final identifier = _emailPhoneController.text;
         final password = _passwordController.text;
 
-        final url = Uri.parse('http://10.0.2.2:3000/api/auth/login');
+        // Menggunakan IP 10.0.2.2 untuk emulator
+        final url = Uri.parse('http://178.128.18.30:3000/api/auth/login');
         final headers = {'Content-Type': 'application/json; charset=UTF-8'};
         final body = json.encode({
           'identifier': identifier,
           'password': password,
         });
 
-        final response = await http.post(url, headers: headers, body: body);
+        final response = await http.post(url, headers: headers, body: body)
+            .timeout(const Duration(seconds: 15));
 
         if (mounted) {
           final responseData = json.decode(response.body);
 
-          // --- PERUBAHAN UTAMA DI SINI ---
+          // 4a. Logika Penanganan Respons
           if (response.statusCode == 200) {
-            // a. Login Sukses
+            // a. Login Sukses (Diarahkan ke Onboarding untuk Review)
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(builder: (context) => const OnboardingScreen()),
                   (route) => false,
             );
           } else if (response.statusCode == 403) {
-            // b. Akun Belum Diverifikasi
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => VerificationScreen(
-                  phoneNumber: _emailPhoneController.text, // Mengirim nomor telepon
+            // 2. Terlarang (Belum Verifikasi)
+            if (responseData['status'] == 'phone_unverified') {
+              // Jika telepon belum diverifikasi, arahkan ke halaman verifikasi OTP
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VerificationScreen(
+                    phoneNumber: _emailPhoneController.text,
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              // Jika email belum diverifikasi atau status 403 lainnya
+              setState(() {
+                _feedbackMessage = responseData['message'] ?? 'Akun Anda belum terverifikasi.';
+                _feedbackColor = Colors.orange;
+              });
+            }
           } else if (response.statusCode == 401) {
-            // c. Kredensial Salah
+            // 3. Kredensial Salah
             setState(() {
               _feedbackMessage = responseData['message'] ?? 'Email/Telepon atau Password salah.';
               _feedbackColor = Colors.red;
             });
           } else {
-            // d. Error Lainnya
+            // 4. Error Lain dari Server
             setState(() {
               _feedbackMessage = responseData['message'] ?? 'Terjadi kesalahan pada server.';
               _feedbackColor = Colors.red;
             });
           }
-          // --- AKHIR PERUBAHAN ---
         }
       } catch (e) {
         if (mounted) {
@@ -122,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
+  // --- AKHIR FUNGSI LOGIN ---
 
   @override
   Widget build(BuildContext context) {
