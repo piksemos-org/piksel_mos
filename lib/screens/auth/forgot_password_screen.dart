@@ -13,6 +13,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailPhoneController = TextEditingController();
   bool _isLoading = false;
+  // 3a. State untuk pesan error
   String? _errorMessage;
 
   @override
@@ -42,8 +43,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       final response = await http.post(url, headers: headers, body: body);
 
       if (mounted) {
+        // 3b. Penanganan respons yang lebih detail
         if (response.statusCode == 200) {
-          // 2a & 2b. Mengaktifkan navigasi dan mengirim data
+          // 1. Sukses
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -52,10 +54,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
             ),
           );
-        } else {
+        } else if (response.statusCode == 403) {
+          // 2. Belum Terverifikasi
           final responseData = json.decode(response.body);
           setState(() {
-            _errorMessage = responseData['message'] ?? 'Gagal mengirim kode.';
+            _errorMessage = responseData['message'] ?? 'Akun ini belum diverifikasi.';
+          });
+        } else {
+          // 3. Error Lainnya
+          final responseData = json.decode(response.body);
+          setState(() {
+            _errorMessage = responseData['message'] ?? 'Terjadi kesalahan. Silakan coba lagi.';
           });
         }
       }
@@ -118,6 +127,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
+
+                // 3c. Tampilkan Pesan Error di UI
                 if (_errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
@@ -127,6 +138,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ),
+
                 ElevatedButton(
                   onPressed: _isLoading ? null : _sendResetCode,
                   style: ElevatedButton.styleFrom(
