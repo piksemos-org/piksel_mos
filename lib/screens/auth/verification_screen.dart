@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:piksel_mos/screens/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -63,7 +64,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
   }
 
-  // --- FUNGSI UTAMA YANG DIREVISI ---
   Future<void> _verifyOtp() async {
     if (_otpController.text.length != 6) {
       setState(() {
@@ -78,25 +78,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
 
     try {
-      // 3b. Implementasi Panggilan API
-      final url = Uri.parse('http://178.128.18.30:3000/api/auth/verify-otp');
+      final url = Uri.parse('http://10.0.2.2:3000/api/auth/verify-otp');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({
         'phoneNumber': widget.phoneNumber,
         'otpCode': _otpController.text,
       });
 
-      final response = await http.post(url, headers: headers, body: body);
+      final response = await http.post(url, headers: headers, body: body)
+          .timeout(const Duration(seconds: 15));
 
       if (mounted) {
+        final responseData = json.decode(response.body);
         if (response.statusCode == 200) {
-          // --- SUKSES ---
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Verifikasi berhasil! Silakan login.'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('session_token', responseData['token'] ?? 'dummy_token');
+          await prefs.setBool('onboarding_completed', false);
+
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (context) => const LoginScreen(
@@ -106,10 +104,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 (Route<dynamic> route) => false,
           );
         } else {
-          // --- GAGAL ---
-          final responseData = json.decode(response.body);
           setState(() {
-            _errorMessage = responseData['message'] ?? 'Kode OTP salah atau tidak valid.';
+            _errorMessage =
+                responseData['message'] ?? 'Kode OTP salah atau tidak valid.';
             _failedAttempts++;
             if (_failedAttempts >= 3) {
               _startCooldownTimer();
@@ -119,11 +116,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
         }
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Gagal terhubung ke server. Periksa koneksi Anda.';
-        });
-      }
+      setState(() {
+        _errorMessage = 'Gagal terhubung ke server. Periksa koneksi Anda.';
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -136,12 +131,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> _sendOtpAgain() async {
     if (!_canResend) return;
 
-    // (Logika kirim ulang OTP tetap sama, diasumsikan sudah terhubung ke server)
     try {
-      final url = Uri.parse('http://178.128.18.30:3000/api/auth/resend-otp');
+      final url = Uri.parse('http://10.0.2.2:3000/api/auth/resend-otp');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({'phoneNumber': widget.phoneNumber});
-      final response = await http.post(url, headers: headers, body: body);
+
+      final response = await http.post(url, headers: headers, body: body)
+          .timeout(const Duration(seconds: 15));
 
       if (mounted) {
         if (response.statusCode == 200) {
@@ -228,6 +224,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _verifyOtp,
                   style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: _isLoading
                       ? const SizedBox(

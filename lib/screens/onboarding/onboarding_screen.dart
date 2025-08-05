@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:piksel_mos/screens/home/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
+  Future<void> _completeOnboarding(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_completed', true);
+
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 3. STRUKTUR & LAYOUT UTAMA
     return Scaffold(
       backgroundColor: Colors.deepPurple.shade900,
       body: SafeArea(
@@ -17,7 +30,6 @@ class OnboardingScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              // 4a. Judul Halaman
               const Text(
                 'Jelajahi Fitur Andalan Kami',
                 textAlign: TextAlign.center,
@@ -28,8 +40,6 @@ class OnboardingScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 48),
-
-              // 4b. Checklist Interaktif
               _buildFeatureCard(
                 icon: Icons.verified_user_outlined,
                 title: 'Kenali Validator Cerdas Kami',
@@ -48,17 +58,8 @@ class OnboardingScreen extends StatelessWidget {
                 description: 'Lihat status pesanan dari dicetak hingga tiba di tujuan.',
               ),
               const Spacer(flex: 3),
-
-              // 4c. Tombol Aksi
               ElevatedButton(
-                onPressed: () {
-                  // 5. Fungsionalitas Navigasi
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                        (route) => false,
-                  );
-                },
+                onPressed: () => _completeOnboarding(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,
@@ -71,14 +72,7 @@ class OnboardingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () {
-                  // 5. Fungsionalitas Navigasi (Sama dengan tombol utama)
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                        (route) => false,
-                  );
-                },
+                onPressed: () => _completeOnboarding(context),
                 child: const Text(
                   'Lewati untuk Sekarang',
                   style: TextStyle(color: Colors.white70),
@@ -92,7 +86,6 @@ class OnboardingScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget untuk membuat kartu fitur agar kode tidak berulang (prinsip DRY)
   Widget _buildFeatureCard({required IconData icon, required String title, required String description}) {
     return Card(
       elevation: 4,

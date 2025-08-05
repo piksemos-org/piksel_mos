@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:piksel_mos/screens/auth/login_screen.dart';
+import 'package:piksel_mos/screens/auth/auth_wrapper.dart'; // Import AuthWrapper
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +15,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        // Menyesuaikan style elevated button agar lebih konsisten
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(
@@ -25,8 +24,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      // Mengatur LoginScreen sebagai halaman utama aplikasi.
-      home: const LoginScreen(),
+      // 5. Ubah properti home
+      home: const AuthWrapper(),
     );
   }
 }
