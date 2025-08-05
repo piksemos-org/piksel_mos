@@ -55,8 +55,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
+      // --- PERBAIKAN 1: Menggunakan IP Address Server yang Benar ---
       final url = Uri.parse('http://178.128.18.30:3000/api/auth/register');
-      final headers = {'Content-Type': 'application/json; charset=UTF-t'};
+
+      // --- PERBAIKAN 2: Memperbaiki Typo pada Header ---
+      final headers = {'Content-Type': 'application/json; charset=UTF-8'};
+
       final body = json.encode({
         'name': _nameController.text,
         'email': _emailController.text,
@@ -73,9 +77,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             MaterialPageRoute(
               builder: (context) => VerificationScreen(
                 phoneNumber: _phoneController.text,
-              ), // Kurung tutup untuk VerificationScreen
-            ), // Kurung tutup untuk MaterialPageRoute
-          ); // Titik koma setelah semua kurung ditutup
+              ),
+            ),
+          );
         } else {
           final responseData = json.decode(response.body);
           setState(() {
