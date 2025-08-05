@@ -1,4 +1,4 @@
-import 'package.flutter/material.dart';
+import 'package:flutter/material.dart'; // BENAR (menggunakan titik dua :)
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:piksel_mos/screens/auth/login_screen.dart';
