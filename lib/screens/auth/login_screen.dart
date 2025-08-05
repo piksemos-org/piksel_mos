@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final identifier = _emailPhoneController.text;
         final password = _passwordController.text;
 
-        final url = Uri.parse('http://10.0.2.2:3000/api/auth/login');
+        final url = Uri.parse('http://178.128.18.30:3000/api/auth/login');
         final headers = {'Content-Type': 'application/json; charset=UTF-8'};
         final body = json.encode({
           'identifier': identifier,
