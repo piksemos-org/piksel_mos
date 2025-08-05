@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  // 1a. "Kotak surat" untuk menerima data dari halaman sebelumnya
+  final String emailOrPhone;
+
+  const ResetPasswordScreen({
+    super.key,
+    required this.emailOrPhone,
+  });
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -32,7 +38,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 24),
-                // Judul Halaman
                 Text(
                   'Atur Ulang Password',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -40,15 +45,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Teks Instruksi
+
+                // 1b. Menampilkan data yang diterima dari halaman sebelumnya
                 Text(
-                  'Masukkan kode verifikasi yang kami kirimkan, lalu buat password baru Anda.',
+                  'Kode verifikasi akan dikirim ke ${widget.emailOrPhone}. Masukkan kode tersebut di bawah ini.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey.shade700,
                   ),
                 ),
+
                 const SizedBox(height: 32),
-                // Kolom Input: Kode Verifikasi (OTP)
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Kode Verifikasi (OTP)',
@@ -56,10 +62,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   keyboardType: TextInputType.number,
                   maxLength: 6,
-                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null, // Menyembunyikan counter karakter
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                 ),
                 const SizedBox(height: 16),
-                // Kolom Input: Password Baru
                 TextField(
                   obscureText: !_isNewPasswordVisible,
                   decoration: InputDecoration(
@@ -72,7 +77,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Kolom Input: Konfirmasi Password Baru
                 TextField(
                   obscureText: !_isConfirmPasswordVisible,
                   decoration: InputDecoration(
@@ -85,7 +89,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Tombol Aksi
                 ElevatedButton(
                   onPressed: () {
                     print('Password baru disimpan...');
