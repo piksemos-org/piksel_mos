@@ -16,7 +16,7 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  // 3a. State Management
+  // State Management
   final _otpController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -34,7 +34,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
-  // 3b. Implementasi di Tombol "SIMPAN PASSWORD BARU"
+  // Implementasi di Tombol "SIMPAN PASSWORD BARU"
   Future<void> _saveNewPassword() async {
     // Validasi di sisi aplikasi
     if (_otpController.text.isEmpty ||
@@ -68,7 +68,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
       final response = await http.post(url, headers: headers, body: body);
 
-      // 3c. Tangani Respons & Navigasi
+      // Tangani Respons & Navigasi
       if (mounted) {
         if (response.statusCode == 200) {
           // Sukses
