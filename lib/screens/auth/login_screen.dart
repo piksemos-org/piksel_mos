@@ -7,6 +7,7 @@ import 'package:piksel_mos/utils/validators.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:piksel_mos/screens/auth/verification_screen.dart';
+import 'package:piksel_mos/screens/onboarding/onboarding_screen.dart'; // 1. PASTIKAN IMPORT INI ADA
 
 class LoginScreen extends StatefulWidget {
   final String? initialMessage;
@@ -74,11 +75,14 @@ class _LoginScreenState extends State<LoginScreen> {
           final responseData = json.decode(response.body);
 
           if (response.statusCode == 200) {
+            // --- PERUBAHAN UTAMA DI SINI ---
+            // Navigasi ke OnboardingScreen untuk kebutuhan review
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(builder: (context) => const OnboardingScreen()),
                   (route) => false,
             );
+            // --- AKHIR PERUBAHAN ---
           } else if (response.statusCode == 403) {
             if (responseData['status'] == 'phone_unverified') {
               Navigator.push(
