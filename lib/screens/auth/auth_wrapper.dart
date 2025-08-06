@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:piksel_mos/screens/auth/login_screen.dart';
 import 'package:piksel_mos/screens/onboarding/onboarding_screen.dart';
-import 'package:piksel_mos/screens/home/home_screen.dart';
 import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
 
 
