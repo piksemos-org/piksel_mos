@@ -78,7 +78,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
 
     try {
-      final url = Uri.parse('http://10.0.2.2:3000/api/auth/verify-otp');
+      final url = Uri.parse('http://178.128.18.30:3000/api/auth/verify-otp');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({
         'phoneNumber': widget.phoneNumber,
@@ -132,7 +132,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (!_canResend) return;
 
     try {
-      final url = Uri.parse('http://10.0.2.2:3000/api/auth/resend-otp');
+      final url = Uri.parse('http://178.128.18.30:3000/api/auth/resend-otp');
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({'phoneNumber': widget.phoneNumber});
 

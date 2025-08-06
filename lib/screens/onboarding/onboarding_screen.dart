@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:piksel_mos/screens/home/home_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
+import 'package:piksel_mos/screens/onboarding/onboarding_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,9 +11,7 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
-    with TickerProviderStateMixin {
-  // Controller untuk animasi masuk (entry animation)
+class _OnboardingScreenState extends State<OnboardingScreen> with TickerProviderStateMixin {
   late final AnimationController _entryAnimationController;
 
   @override
@@ -21,7 +19,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.initState();
     _entryAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
     );
     // Memulai animasi setelah build pertama selesai
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,29 +69,35 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
               const SizedBox(height: 48),
 
-              // Kartu fitur sekarang dibungkus dengan widget animasi
-              AnimatedFeatureCard(
+              // Kartu fitur sekarang menjadi widget animasi
+              _AnimatedFeatureCard(
                 controller: _entryAnimationController,
-                interval: const Interval(0.0, 0.6, curve: Curves.easeOut),
-                icon: Icons.verified_user_outlined,
+                interval: const Interval(0.0, 0.7, curve: Curves.easeOut),
+                iconData: Icons.verified_user_outlined,
                 title: 'Kenali Validator Cerdas Kami',
                 description: 'Cegah kesalahan cetak dengan pengecekan file otomatis.',
+                iconHeroTag: 'icon-1',
+                titleHeroTag: 'title-1',
               ),
               const SizedBox(height: 16),
-              AnimatedFeatureCard(
+              _AnimatedFeatureCard(
                 controller: _entryAnimationController,
-                interval: const Interval(0.2, 0.8, curve: Curves.easeOut),
-                icon: Icons.brush_outlined,
+                interval: const Interval(0.2, 0.9, curve: Curves.easeOut),
+                iconData: Icons.brush_outlined,
                 title: 'Temukan Desainer di Piksel Studio',
                 description: 'Wujudkan idemu bersama desainer profesional kami.',
+                iconHeroTag: 'icon-2',
+                titleHeroTag: 'title-2',
               ),
               const SizedBox(height: 16),
-              AnimatedFeatureCard(
+              _AnimatedFeatureCard(
                 controller: _entryAnimationController,
                 interval: const Interval(0.4, 1.0, curve: Curves.easeOut),
-                icon: Icons.local_shipping_outlined,
+                iconData: Icons.local_shipping_outlined,
                 title: 'Lacak Pesananmu dengan Mudah',
                 description: 'Lihat status pesanan dari dicetak hingga tiba di tujuan.',
+                iconHeroTag: 'icon-3',
+                titleHeroTag: 'title-3',
               ),
               const Spacer(flex: 3),
 
@@ -127,29 +131,30 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 }
 
 // Widget terpisah untuk kartu fitur agar dapat mengelola animasinya sendiri
-class AnimatedFeatureCard extends StatefulWidget {
+class _AnimatedFeatureCard extends StatefulWidget {
   final AnimationController controller;
   final Interval interval;
-  final IconData icon;
+  final IconData iconData;
   final String title;
   final String description;
+  final String iconHeroTag;
+  final String titleHeroTag;
 
-  const AnimatedFeatureCard({
-    super.key,
+  const _AnimatedFeatureCard({
     required this.controller,
     required this.interval,
-    required this.icon,
+    required this.iconData,
     required this.title,
     required this.description,
+    required this.iconHeroTag,
+    required this.titleHeroTag,
   });
 
   @override
-  State<AnimatedFeatureCard> createState() => _AnimatedFeatureCardState();
+  State<_AnimatedFeatureCard> createState() => __AnimatedFeatureCardState();
 }
 
-class _AnimatedFeatureCardState extends State<AnimatedFeatureCard>
-    with TickerProviderStateMixin {
-  // Controller untuk animasi standby (standby animation)
+class __AnimatedFeatureCardState extends State<_AnimatedFeatureCard> with TickerProviderStateMixin {
   late final AnimationController _standbyController;
   late final Animation<double> _opacityAnimation;
 
@@ -159,9 +164,9 @@ class _AnimatedFeatureCardState extends State<AnimatedFeatureCard>
     _standbyController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat(reverse: true); // Loop animasi maju-mundur
+    )..repeat(reverse: true);
 
-    _opacityAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+    _opacityAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
       CurvedAnimation(parent: _standbyController, curve: Curves.easeInOut),
     );
   }
@@ -174,21 +179,18 @@ class _AnimatedFeatureCardState extends State<AnimatedFeatureCard>
 
   @override
   Widget build(BuildContext context) {
-    // 3a. Implementasi Animasi Masuk (Entry Animation)
     return FadeTransition(
       opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(parent: widget.controller, curve: widget.interval),
       ),
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(1.0, 0.0),
+          begin: const Offset(0.5, 0.0),
           end: Offset.zero,
         ).animate(
           CurvedAnimation(parent: widget.controller, curve: widget.interval),
         ),
-        child:
-        // 3b. Implementasi Animasi Standby (Standby Animation)
-        AnimatedBuilder(
+        child: AnimatedBuilder(
           animation: _opacityAnimation,
           builder: (context, child) {
             return Opacity(
@@ -196,52 +198,65 @@ class _AnimatedFeatureCardState extends State<AnimatedFeatureCard>
               child: child,
             );
           },
-          child: Card(
-            elevation: 4,
-            shadowColor: Colors.black.withOpacity(0.5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // 3c. Persiapan Animasi Hero (ditempatkan di sini)
-                  // TODO: Bungkus Icon dengan Hero widget jika halaman detail sudah ada
-                  // Hero(
-                  //   tag: 'onboarding_icon_${widget.title}',
-                  //   child: Icon(widget.icon, size: 40, color: Colors.deepPurple.shade700),
-                  // ),
-                  Icon(widget.icon, size: 40, color: Colors.deepPurple.shade700),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // TODO: Bungkus Text dengan Hero widget jika halaman detail sudah ada
-                        // Hero(
-                        //   tag: 'onboarding_title_${widget.title}',
-                        //   child: Material( // Diperlukan agar teks tidak error saat transisi
-                        //     color: Colors.transparent,
-                        //     child: Text(widget.title, ...),
-                        //   ),
-                        // ),
-                        Text(
-                          widget.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.description,
-                          style: TextStyle(color: Colors.grey.shade600),
-                        ),
-                      ],
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 500),
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      OnboardingDetailScreen(
+                        title: widget.title,
+                        description: widget.description,
+                        iconData: widget.iconData,
+                        iconHeroTag: widget.iconHeroTag,
+                        titleHeroTag: widget.titleHeroTag,
+                      ),
+                ),
+              );
+            },
+            child: Card(
+              elevation: 4,
+              shadowColor: Colors.black.withOpacity(0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Hero(
+                      tag: widget.iconHeroTag,
+                      child: Icon(widget.iconData, size: 40, color: Colors.deepPurple.shade700),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Hero(
+                            tag: widget.titleHeroTag,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: Text(
+                                widget.title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.description,
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

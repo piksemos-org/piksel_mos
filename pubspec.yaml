@@ -15,6 +15,7 @@ dependencies:
   http: ^1.2.1
   shared_preferences: ^2.2.3
   cached_network_image: ^3.3.1
+  lottie: ^3.1.2
 
 
 dev_dependencies:
