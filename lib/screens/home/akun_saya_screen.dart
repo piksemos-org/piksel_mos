@@ -1,7 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:piksel_mos/screens/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // Import placeholder screens
 import 'package:piksel_mos/screens/profile/navigasi/menunggu_pembayaran_screen.dart';
@@ -9,19 +13,96 @@ import 'package:piksel_mos/screens/profile/navigasi/dalam_proses_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/desain_saya_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/alamat_tersimpan_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/pengaturan_akun_screen.dart';
-import 'package:piksel_mos/screens/profile/navigasi/riwayat_screen.dart'; // 4. Tambahkan import baru
 
-class AkunSayaScreen extends StatelessWidget {
+class AkunSayaScreen extends StatefulWidget {
   final String userName;
   final String userRole;
   final bool isEmailVerified;
+  final String? userPhotoUrl;
 
   const AkunSayaScreen({
     super.key,
     required this.userName,
     required this.userRole,
-    this.isEmailVerified = false,
+    required this.isEmailVerified,
+    this.userPhotoUrl,
   });
+
+  @override
+  State<AkunSayaScreen> createState() => _AkunSayaScreenState();
+}
+
+class _AkunSayaScreenState extends State<AkunSayaScreen> {
+  // State untuk mengelola foto profil dan status upload
+  String? _currentPhotoUrl;
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPhotoUrl = widget.userPhotoUrl;
+  }
+
+  // 4a & 4b. Fungsi untuk memilih dan mengunggah gambar
+  Future<void> _pickAndUploadImage() async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      // Buka galeri untuk memilih gambar
+      final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        // Jika pengguna memilih gambar, lanjutkan proses upload
+        var url = Uri.parse('http://178.128.18.30:3000/api/users/upload-photo');
+        var request = http.MultipartRequest('POST', url);
+
+        // Tambahkan file gambar ke request
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile_picture',
+          pickedFile.path,
+        ));
+
+        // Tambahkan ID pengguna (dummy untuk sekarang)
+        request.fields['userId'] = '1';
+
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+
+        if (mounted) {
+          if (response.statusCode == 200) {
+            final responseData = json.decode(response.body);
+            // 4c. Update UI setelah sukses
+            setState(() {
+              _currentPhotoUrl = responseData['photoUrl'];
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Foto profil berhasil diperbarui!'), backgroundColor: Colors.green),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Gagal mengunggah foto.'), backgroundColor: Colors.red),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Terjadi kesalahan. Coba lagi.'), backgroundColor: Colors.red),
+        );
+      }
+      print('Error picking/uploading image: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
 
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -44,34 +125,15 @@ class AkunSayaScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              _buildProfileCard(context, userName: userName, userRole: userRole),
+              _buildProfileCard(context),
               const SizedBox(height: 16),
-
-              if (!isEmailVerified) _buildVerificationBanner(context),
-
+              if (!widget.isEmailVerified) _buildVerificationBanner(context),
               _buildMenuGroup(
                 context: context,
                 title: 'Aktivitas Pesanan',
                 items: [
-                  _buildMenuTile(
-                    context,
-                    icon: Icons.wallet_outlined,
-                    title: 'Menunggu Pembayaran',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MenungguPembayaranScreen())),
-                  ),
-                  _buildMenuTile(
-                    context,
-                    icon: Icons.sync,
-                    title: 'Dalam Proses',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DalamProsesScreen())),
-                  ),
-                  // 4. Tambahkan ListTile untuk Riwayat
-                  _buildMenuTile(
-                    context,
-                    icon: Icons.history_outlined,
-                    title: 'Riwayat Pesanan',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RiwayatScreen())),
-                  ),
+                  _buildMenuTile(context, icon: Icons.wallet_outlined, title: 'Menunggu Pembayaran', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MenungguPembayaranScreen()))),
+                  _buildMenuTile(context, icon: Icons.sync, title: 'Dalam Proses', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DalamProsesScreen()))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -79,12 +141,7 @@ class AkunSayaScreen extends StatelessWidget {
                 context: context,
                 title: 'Aset & Data Saya',
                 items: [
-                  _buildMenuTile(
-                    context,
-                    icon: Icons.image_outlined,
-                    title: 'Desain Saya',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DesainSayaScreen())),
-                  ),
+                  _buildMenuTile(context, icon: Icons.image_outlined, title: 'Desain Saya', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DesainSayaScreen()))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -92,12 +149,7 @@ class AkunSayaScreen extends StatelessWidget {
                 context: context,
                 title: 'History',
                 items: [
-                  _buildMenuTile(
-                    context,
-                    icon: Icons.location_on_outlined,
-                    title: 'Alamat Tersimpan',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AlamatTersimpanScreen())),
-                  ),
+                  _buildMenuTile(context, icon: Icons.location_on_outlined, title: 'Alamat Tersimpan', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AlamatTersimpanScreen()))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -105,12 +157,7 @@ class AkunSayaScreen extends StatelessWidget {
                 context: context,
                 title: 'Pengaturan & Bantuan',
                 items: [
-                  _buildMenuTile(
-                    context,
-                    icon: Icons.settings_outlined,
-                    title: 'Pengaturan Akun',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PengaturanAkunScreen())),
-                  ),
+                  _buildMenuTile(context, icon: Icons.settings_outlined, title: 'Pengaturan Akun', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PengaturanAkunScreen()))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -130,9 +177,9 @@ class AkunSayaScreen extends StatelessWidget {
     );
   }
 
-  // ... (semua widget helper lainnya tetap sama) ...
-  Widget _buildProfileCard(BuildContext context, {required String userName, required String userRole}) {
-    final initials = userName.isNotEmpty ? userName.trim().split(' ').map((l) => l[0]).take(2).join() : '';
+  // --- WIDGET HELPER DIREVISI ---
+  Widget _buildProfileCard(BuildContext context) {
+    final initials = widget.userName.isNotEmpty ? widget.userName.trim().split(' ').map((l) => l[0]).take(2).join() : '';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -140,17 +187,39 @@ class AkunSayaScreen extends StatelessWidget {
       elevation: 0,
       child: Row(
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            color: Colors.deepPurple,
-            child: Center(
-              child: Text(
-                initials.toUpperCase(),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold),
+          // 4c. Implementasi di UI
+          GestureDetector(
+            onTap: _isUploading ? null : _pickAndUploadImage,
+            child: Container(
+              width: 100,
+              height: 100,
+              color: Colors.deepPurple,
+              // Tumpuk loading indicator di atas gambar
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Tampilkan gambar jika ada URL, jika tidak, tampilkan inisial
+                  if (_currentPhotoUrl != null)
+                    CachedNetworkImage(
+                      imageUrl: _currentPhotoUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Colors.white)),
+                      errorWidget: (context, url, error) => Center(child: Icon(Icons.error, color: Colors.white)),
+                    )
+                  else
+                    Center(
+                      child: Text(
+                        initials.toUpperCase(),
+                        style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  // Tampilkan loading indicator
+                  if (_isUploading)
+                    Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                    ),
+                ],
               ),
             ),
           ),
@@ -161,13 +230,11 @@ class AkunSayaScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    userName,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                    widget.userName,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(userRole,
-                      style: const TextStyle(color: Colors.grey)),
+                  Text(widget.userRole, style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -176,9 +243,7 @@ class AkunSayaScreen extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
               icon: const Icon(Icons.edit_outlined),
-              onPressed: () {
-                print('Tombol Edit Profil ditekan');
-              },
+              onPressed: () { print('Tombol Edit Profil ditekan'); },
               style: IconButton.styleFrom(
                 backgroundColor: Colors.grey.shade200,
                 foregroundColor: Colors.deepPurple,
@@ -190,6 +255,7 @@ class AkunSayaScreen extends StatelessWidget {
     );
   }
 
+  // (Fungsi helper lainnya tidak berubah)
   Widget _buildVerificationBanner(BuildContext context) {
     return Card(
       color: Colors.amber.shade100,
