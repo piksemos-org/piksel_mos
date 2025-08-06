@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
 import 'package:piksel_mos/screens/onboarding/onboarding_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:piksel_mos/screens/auth/auth_wrapper.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -40,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     if (context.mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const MainScreenWrapper()),
+        MaterialPageRoute(builder: (context) => const AuthWrapper()),
             (route) => false,
       );
     }

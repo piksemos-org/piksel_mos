@@ -12,16 +12,21 @@ import 'package:piksel_mos/screens/profile/navigasi/pengaturan_akun_screen.dart'
 
 
 class AkunSayaScreen extends StatelessWidget {
-  // Data pengguna (sementara di-hardcode, nanti diambil dari state management)
-  final String userName = "Akbar Dwi Mulya";
-  final bool isEmailVerified = false; // Ganti menjadi 'true' untuk menyembunyikan banner
+  // Terima data pengguna
+  final String userName;
+  final String userRole;
+  final bool isEmailVerified;
 
-  const AkunSayaScreen({super.key});
+  const AkunSayaScreen({
+    super.key,
+    required this.userName,
+    required this.userRole,
+    this.isEmailVerified = false, // Default value
+  });
 
-  // Fungsi untuk Logout
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Hapus semua data sesi
+    await prefs.clear();
 
     if (context.mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -34,26 +39,18 @@ class AkunSayaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 4a. Layout Utama
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: const Text('Profil Saya'),
-        backgroundColor: Colors.white,
-        elevation: 1,
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // 4b. Kartu Nama Digital
-              _buildProfileCard(context),
+              // Gunakan data pengguna dinamis
+              _buildProfileCard(context, userName: userName, userRole: userRole),
               const SizedBox(height: 16),
 
-              // 4c. Banner Verifikasi (Kondisional)
               if (!isEmailVerified) _buildVerificationBanner(context),
 
-              // 4d. Grup Menu
               _buildMenuGroup(
                 context: context,
                 title: 'Aktivitas Pesanan',
@@ -112,7 +109,6 @@ class AkunSayaScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              // 4e. Tombol Logout
               Card(
                 clipBehavior: Clip.antiAlias,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -129,8 +125,10 @@ class AkunSayaScreen extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk UI
-  Widget _buildProfileCard(BuildContext context) {
+  Widget _buildProfileCard(BuildContext context, {required String userName, required String userRole}) {
+    // Ambil inisial dari nama
+    final initials = userName.isNotEmpty ? userName.trim().split(' ').map((l) => l[0]).take(2).join() : '';
+
     return Card(
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -141,10 +139,10 @@ class AkunSayaScreen extends StatelessWidget {
             width: 100,
             height: 100,
             color: Colors.deepPurple,
-            child: const Center(
+            child: Center(
               child: Text(
-                'AD',
-                style: TextStyle(
+                initials.toUpperCase(),
+                style: const TextStyle(
                     color: Colors.white,
                     fontSize: 36,
                     fontWeight: FontWeight.bold),
@@ -163,8 +161,8 @@ class AkunSayaScreen extends StatelessWidget {
                         fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  const Text('Customer Terverifikasi',
-                      style: TextStyle(color: Colors.grey)),
+                  Text(userRole,
+                      style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),

@@ -7,6 +7,7 @@ import 'package:piksel_mos/screens/auth/register_screen.dart';
 import 'package:piksel_mos/screens/auth/forgot_password_screen.dart';
 import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
 
+
 class LoginScreen extends StatefulWidget {
   final String? initialMessage;
   const LoginScreen({super.key, this.initialMessage});
@@ -75,9 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
           // Login berhasil, navigasi ke MainScreenWrapper
           final String userName = responseData['data']['name'] ?? 'Pengguna';
           final String userEmail = responseData['data']['email'] ?? 'email@contoh.com';
-          final String userPhoneNumber = responseData['data']['phone'] ?? identifier; // Asumsi backend mengembalikan 'phone'
-          final String userRole = responseData['data']['role'] ?? 'Customer'; // Asumsi backend mengembalikan 'role'
-          final String? userPhotoUrl = responseData['data']['photo_url']; // Asumsi backend mengembalikan 'photo_url'
+          final String userPhoneNumber = responseData['data']['phone'] ?? identifier;
+          final String userRole = responseData['data']['role'] ?? 'Customer';
+          final String? userPhotoUrl = responseData['data']['photo_url'];
+          // DEFINISIKAN VARIABEL isEmailVerified DI SINI
+          final bool isEmailVerified = responseData['data']['is_email_verified'] ?? false;
 
           Navigator.pushReplacement(
             context,
@@ -88,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 userPhoneNumber: userPhoneNumber,
                 userRole: userRole,
                 userPhotoUrl: userPhotoUrl,
+                isEmailVerified: isEmailVerified, // Sekarang variabelnya sudah ada
               ),
             ),
           );

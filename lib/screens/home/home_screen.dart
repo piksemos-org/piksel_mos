@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:piksel_mos/widgets/feed_card_widget.dart';
 
+typedef TabCallback = void Function(int index);
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final TabCallback onTabChange;
+  const HomeScreen({super.key, required this.onTabChange}); // <-- Konstruktor baru
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -57,11 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Beranda'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
