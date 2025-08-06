@@ -6,6 +6,7 @@ import 'package:piksel_mos/screens/onboarding/onboarding_screen.dart';
 import 'package:piksel_mos/screens/home/home_screen.dart';
 import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
 
+
 // 4. Implementasi "Mode Review"
 const bool IS_REVIEW_MODE = true;
 
@@ -48,7 +49,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       if (token != null) {
         if (onboardingCompleted) {
           setState(() {
-            _currentPage = const HomeScreen();
+            _currentPage = const MainScreenWrapper();
           });
         } else {
           setState(() {

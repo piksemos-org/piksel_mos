@@ -20,6 +20,15 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Perkiraan jumlah baris berdasarkan panjang karakter
+    final textPainter = TextPainter(
+      text: TextSpan(text: widget.description, style: Theme.of(context).textTheme.bodyMedium),
+      maxLines: 3,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: MediaQuery.of(context).size.width - 56); // Lebar kartu dikurangi padding
+
+    final isTextLong = textPainter.didExceedMaxLines;
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -27,7 +36,6 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Gambar Postingan
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: CachedNetworkImage(
@@ -44,7 +52,6 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
               width: double.infinity,
             ),
           ),
-          // Deskripsi dengan "Baca Selengkapnya"
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -59,9 +66,7 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
                     overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
                   ),
                 ),
-                // Tampilkan tombol jika teks lebih dari 3 baris
-                // (Logika sederhana, bisa disempurnakan dengan TextPainter)
-                if (widget.description.length > 100) // Asumsi panjang teks
+                if (isTextLong)
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -78,7 +83,25 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
                         ),
                       ),
                     ),
-                  )
+                  ),
+                const Divider(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.favorite_outline),
+                      onPressed: () {
+                        print('Tombol Suka ditekan');
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.share_outlined),
+                      onPressed: () {
+                        print('Tombol Bagikan ditekan');
+                      },
+                    ),
+                  ],
+                )
               ],
             ),
           ),
