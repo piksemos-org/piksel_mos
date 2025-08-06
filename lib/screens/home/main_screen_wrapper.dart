@@ -1,13 +1,26 @@
-// main_screen_wrapper.dart (Kode versi penuh karena baru dibuat)
+// lib/screens/home/main_screen_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:piksel_mos/screens/home/akun_saya_screen.dart';
 import 'package:piksel_mos/screens/home/home_screen.dart';
-import 'package:piksel_mos/screens/home/lacak_pesanan_screen.dart';
+import 'package:piksel_mos/screens/home/lacak_pesanan_screen.dart'; // Tetap ada jika masih digunakan di Lacak Pesanan
 import 'package:piksel_mos/screens/home/piksel_studio_screen.dart';
 import 'package:piksel_mos/screens/home/wujudkan_screen.dart';
 
 class MainScreenWrapper extends StatefulWidget {
-  const MainScreenWrapper({super.key});
+  final String userName;
+  final String userEmail;
+  final String userPhoneNumber;
+  final String userRole; // Tambahkan userRole
+  final String? userPhotoUrl;
+
+  const MainScreenWrapper({
+    super.key,
+    this.userName = 'Nama Pengguna',
+    this.userEmail = 'email@contoh.com',
+    this.userPhoneNumber = '081234567890',
+    this.userRole = 'Customer', // Default placeholder
+    this.userPhotoUrl,
+  });
 
   @override
   State<MainScreenWrapper> createState() => _MainScreenWrapperState();
@@ -16,13 +29,25 @@ class MainScreenWrapper extends StatefulWidget {
 class _MainScreenWrapperState extends State<MainScreenWrapper> {
   int _selectedIndex = 2; // Home (index 2) sebagai tab default
 
-  static const List<Widget> _screens = <Widget>[
-    WujudkanScreen(),
-    PikselStudioScreen(),
-    HomeScreen(),
-    LacakPesananScreen(),
-    AkunSayaScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = <Widget>[
+      const WujudkanScreen(),
+      const PikselStudioScreen(),
+      const HomeScreen(),
+      const LacakPesananScreen(),
+      AkunSayaScreen( // AkunSayaScreen kini menerima data pengguna dan role
+        userName: widget.userName,
+        userEmail: widget.userEmail,
+        userPhoneNumber: widget.userPhoneNumber,
+        userRole: widget.userRole, // Meneruskan role
+        userPhotoUrl: widget.userPhotoUrl,
+      ),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {

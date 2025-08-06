@@ -1,19 +1,19 @@
-// lib/screens/profile/navigasi/saldo_anda_screen.dart
+// lib/screens/profile/navigasi/menunggu_bayar_screen.dart
 import 'package:flutter/material.dart';
 
-class SaldoAndaScreen extends StatelessWidget {
-  const SaldoAndaScreen({super.key});
+class MenungguBayarScreen extends StatelessWidget {
+  const MenungguBayarScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saldo Anda'),
+        title: const Text('Menunggu Bayar'),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
       ),
       body: const Center(
-        child: Text('Saldo Anda Screen (Placeholder)'),
+        child: Text('Menunggu Bayar Screen (Placeholder)'),
       ),
     );
   }
