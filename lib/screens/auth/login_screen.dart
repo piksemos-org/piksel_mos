@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:piksel_mos/screens/auth/verification_screen.dart';
 import 'package:piksel_mos/screens/onboarding/onboarding_screen.dart'; // 1. PASTIKAN IMPORT INI ADA
+import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
+
 
 class LoginScreen extends StatefulWidget {
   final String? initialMessage;
@@ -79,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Navigasi ke OnboardingScreen untuk kebutuhan review
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+              MaterialPageRoute(builder: (context) => const MainScreenWrapper()),
                   (route) => false,
             );
             // --- AKHIR PERUBAHAN ---
