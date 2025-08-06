@@ -9,10 +9,9 @@ import 'package:piksel_mos/screens/profile/navigasi/dalam_proses_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/desain_saya_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/alamat_tersimpan_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/pengaturan_akun_screen.dart';
-
+import 'package:piksel_mos/screens/profile/navigasi/riwayat_screen.dart'; // 4. Tambahkan import baru
 
 class AkunSayaScreen extends StatelessWidget {
-  // Terima data pengguna
   final String userName;
   final String userRole;
   final bool isEmailVerified;
@@ -21,7 +20,7 @@ class AkunSayaScreen extends StatelessWidget {
     super.key,
     required this.userName,
     required this.userRole,
-    this.isEmailVerified = false, // Default value
+    this.isEmailVerified = false,
   });
 
   Future<void> _logout(BuildContext context) async {
@@ -45,7 +44,6 @@ class AkunSayaScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Gunakan data pengguna dinamis
               _buildProfileCard(context, userName: userName, userRole: userRole),
               const SizedBox(height: 16),
 
@@ -66,6 +64,13 @@ class AkunSayaScreen extends StatelessWidget {
                     icon: Icons.sync,
                     title: 'Dalam Proses',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DalamProsesScreen())),
+                  ),
+                  // 4. Tambahkan ListTile untuk Riwayat
+                  _buildMenuTile(
+                    context,
+                    icon: Icons.history_outlined,
+                    title: 'Riwayat Pesanan',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RiwayatScreen())),
                   ),
                 ],
               ),
@@ -125,8 +130,8 @@ class AkunSayaScreen extends StatelessWidget {
     );
   }
 
+  // ... (semua widget helper lainnya tetap sama) ...
   Widget _buildProfileCard(BuildContext context, {required String userName, required String userRole}) {
-    // Ambil inisial dari nama
     final initials = userName.isNotEmpty ? userName.trim().split(' ').map((l) => l[0]).take(2).join() : '';
 
     return Card(
