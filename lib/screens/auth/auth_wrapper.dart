@@ -31,6 +31,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final token = prefs.getString('session_token');
     final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
+    print('AuthWrapper Check: Token = $token, Onboarding Completed = $onboardingCompleted');
+
     // Logika "Gerbang Cerdas"
     if (IS_REVIEW_MODE) {
       // Logika untuk Mode Review
