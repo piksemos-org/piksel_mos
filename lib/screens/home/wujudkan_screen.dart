@@ -1,3 +1,4 @@
+// wujudkan_screen.dart
 import 'package:flutter/material.dart';
 
 class WujudkanScreen extends StatelessWidget {
@@ -5,8 +6,8 @@ class WujudkanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Halaman Wujudkan')),
+    return const Center(
+      child: Text('Wujudkan Screen (Placeholder)'),
     );
   }
 }

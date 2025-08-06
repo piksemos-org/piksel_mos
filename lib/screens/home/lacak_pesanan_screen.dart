@@ -1,3 +1,4 @@
+// lacak_pesanan_screen.dart
 import 'package:flutter/material.dart';
 
 class LacakPesananScreen extends StatelessWidget {
@@ -5,9 +6,8 @@ class LacakPesananScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Lacak Pesanan')),
-      body: const Center(child: Text('Halaman Lacak Pesanan')),
+    return const Center(
+      child: Text('Lacak Pesanan Screen (Placeholder)'),
     );
   }
 }

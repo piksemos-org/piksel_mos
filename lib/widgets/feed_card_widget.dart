@@ -1,15 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
+// feed_card_widget.dart (Kode versi penuh karena baru dibuat)
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class FeedCardWidget extends StatefulWidget {
-  final String imageUrl;
-  final String description;
+  final Map<String, dynamic> post;
 
-  const FeedCardWidget({
-    super.key,
-    required this.imageUrl,
-    required this.description,
-  });
+  const FeedCardWidget({super.key, required this.post});
 
   @override
   State<FeedCardWidget> createState() => _FeedCardWidgetState();
@@ -20,93 +16,85 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Perkiraan jumlah baris berdasarkan panjang karakter
-    final textPainter = TextPainter(
-      text: TextSpan(text: widget.description, style: Theme.of(context).textTheme.bodyMedium),
-      maxLines: 3,
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: MediaQuery.of(context).size.width - 56); // Lebar kartu dikurangi padding
-
-    final isTextLong = textPainter.didExceedMaxLines;
-
     return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      elevation: 2,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: CachedNetworkImage(
-              imageUrl: widget.imageUrl,
-              placeholder: (context, url) => const AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Center(child: CircularProgressIndicator()),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12.0)),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: CachedNetworkImage(
+                imageUrl: widget.post['image_url'],
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
-              errorWidget: (context, url, error) => const AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Center(child: Icon(Icons.error)),
-              ),
-              fit: BoxFit.cover,
-              width: double.infinity,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isExpanded = !_isExpanded;
+                    });
+                  },
                   child: Text(
-                    widget.description,
+                    widget.post['description'],
                     maxLines: _isExpanded ? null : 3,
                     overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
-                if (isTextLong)
-                  GestureDetector(
-                    onTap: () {
+                if (widget.post['description'].length > 100)
+                  TextButton(
+                    onPressed: () {
                       setState(() {
                         _isExpanded = !_isExpanded;
                       });
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _isExpanded ? 'Sembunyikan' : 'Baca Selengkapnya...',
-                        style: TextStyle(
-                          color: Colors.deepPurple,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    child: Text(_isExpanded ? 'Sembunyikan' : 'Baca Selengkapnya...'),
                   ),
-                const Divider(height: 24),
+                const SizedBox(height: 8.0),
+                Text(
+                  _formatDate(widget.post['created_at']),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                ),
+                const SizedBox(height: 16.0),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.favorite_outline),
                       onPressed: () {
-                        print('Tombol Suka ditekan');
+                        print('Tombol Suka ditekan untuk post ID: ${widget.post['id']}');
                       },
                     ),
                     IconButton(
                       icon: const Icon(Icons.share_outlined),
                       onPressed: () {
-                        print('Tombol Bagikan ditekan');
+                        print('Tombol Bagikan ditekan untuk post ID: ${widget.post['id']}');
                       },
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDate(String isoString) {
+    final dateTime = DateTime.parse(isoString);
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}';
   }
 }

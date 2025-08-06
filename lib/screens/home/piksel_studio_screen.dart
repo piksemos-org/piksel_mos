@@ -1,3 +1,4 @@
+// piksel_studio_screen.dart
 import 'package:flutter/material.dart';
 
 class PikselStudioScreen extends StatelessWidget {
@@ -5,9 +6,8 @@ class PikselStudioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Piksel Studio')),
-      body: const Center(child: Text('Halaman Piksel Studio')),
+    return const Center(
+      child: Text('Piksel Studio Screen (Placeholder)'),
     );
   }
 }

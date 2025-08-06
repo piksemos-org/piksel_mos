@@ -1,3 +1,4 @@
+// akun_saya_screen.dart
 import 'package:flutter/material.dart';
 
 class AkunSayaScreen extends StatelessWidget {
@@ -5,9 +6,8 @@ class AkunSayaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Akun Saya')),
-      body: const Center(child: Text('Halaman Akun Saya')),
+    return const Center(
+      child: Text('Akun Saya Screen (Placeholder)'),
     );
   }
 }
