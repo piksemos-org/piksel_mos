@@ -41,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     if (context.mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainScreenWrapper()),
             (route) => false,
       );
     }
