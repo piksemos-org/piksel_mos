@@ -6,7 +6,7 @@ import 'package:piksel_mos/screens/home/lacak_pesanan_screen.dart';
 import 'package:piksel_mos/screens/home/akun_saya_screen.dart';
 
 class MainScreenWrapper extends StatefulWidget {
-  // 1. Definisikan "kantong" untuk setiap data
+  // "Kantong" untuk menerima data pengguna
   final String userName;
   final String userEmail;
   final String userPhoneNumber;
@@ -14,7 +14,6 @@ class MainScreenWrapper extends StatefulWidget {
   final String? userPhotoUrl;
   final bool isEmailVerified;
 
-  // 2. Buat konstruktor yang mewajibkan data ini diisi
   const MainScreenWrapper({
     super.key,
     required this.userName,
@@ -42,7 +41,7 @@ class _MainScreenWrapperState extends State<MainScreenWrapper> {
       const PikselStudioScreen(),
       HomeScreen(onTabChange: _onItemTapped),
       const LacakPesananScreen(),
-      // Teruskan data ke AkunSayaScreen
+      // Teruskan data dari "kantong" widget ke AkunSayaScreen
       AkunSayaScreen(
         userName: widget.userName,
         userRole: widget.userRole,
@@ -59,13 +58,14 @@ class _MainScreenWrapperState extends State<MainScreenWrapper> {
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-  // AppBar sekarang tampil permanen di semua tab
-  appBar: AppBar(
-  title: const Text('Piksel.mos'),
-  automaticallyImplyLeading: false,
-  ),
-  body: IndexedStack(
+    return Scaffold(
+      appBar: _selectedIndex != 4 // Tampilkan AppBar kecuali di tab Profil (indeks 4)
+          ? AppBar(
+        title: const Text('Piksel.mos'),
+        automaticallyImplyLeading: false,
+      )
+          : null,
+      body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
