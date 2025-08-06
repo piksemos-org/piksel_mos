@@ -1,31 +1,34 @@
 // lib/screens/home/akun_saya_screen.dart
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart'; // Untuk foto profil dari network
-import 'package:piksel_mos/screens/auth/login_screen.dart'; // Untuk navigasi logout
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:piksel_mos/screens/auth/login_screen.dart';
 
-// Import halaman-halaman navigasi placeholder yang baru dibuat/dipindahkan
+// Import halaman-halaman navigasi dari lokasi baru
 import 'package:piksel_mos/screens/profile/navigasi/riwayat_screen.dart';
-import 'package:piksel_mos/screens/profile/navigasi/saldo_anda_screen.dart';
-import 'package:piksel_mos/screens/profile/navigasi/belum_dibayar_screen.dart';
-import 'package:piksel_mos/screens/profile/navigasi/di_proses_screen.dart';
-import 'package:piksel_mos/screens/profile/settings/profile_settings_screen.dart';
+import 'package:piksel_mos/screens/profile/navigasi/desain_saya_screen.dart';
+import 'package:piksel_mos/screens/profile/navigasi/menunggu_bayar_screen.dart';
+import 'package:piksel_mos/screens/profile/navigasi/dalam_proses_screen.dart';
+
+// Import halaman-halaman pengaturan dari lokasi baru
+import 'package:piksel_mos/screens/profile/settings/profile_setting_screen.dart';
 import 'package:piksel_mos/screens/profile/settings/notification_settings_screen.dart';
 import 'package:piksel_mos/screens/profile/settings/chat_piksel_mos_screen.dart';
 import 'package:piksel_mos/screens/profile/settings/pusat_bantuan_screen.dart';
 
 
-class AkunSayaScreen extends StatefulWidget { // Diubah menjadi StatefulWidget
-  // Data pengguna yang akan diterima dari LoginScreen atau penyimpanan lokal
+class AkunSayaScreen extends StatefulWidget {
   final String userName;
   final String userEmail;
   final String userPhoneNumber;
-  final String? userPhotoUrl; // Opsional, jika ada URL foto profil
+  final String userRole; // Tambahan: Role pengguna
+  final String? userPhotoUrl;
 
   const AkunSayaScreen({
     super.key,
-    this.userName = 'Nama Pengguna', // Default placeholder
-    this.userEmail = 'email@contoh.com', // Default placeholder
-    this.userPhoneNumber = '081234567890', // Default placeholder
+    this.userName = 'Nama Pengguna',
+    this.userEmail = 'email@contoh.com',
+    this.userPhoneNumber = '081234567890',
+    this.userRole = 'Customer', // Default placeholder role
     this.userPhotoUrl,
   });
 
@@ -34,17 +37,13 @@ class AkunSayaScreen extends StatefulWidget { // Diubah menjadi StatefulWidget
 }
 
 class _AkunSayaScreenState extends State<AkunSayaScreen> {
-
-  // Fungsi utility untuk masking nomor HP
   String _maskPhoneNumber(String phoneNumber) {
-    if (phoneNumber.length < 9) return phoneNumber; // Minimal panjang untuk masking
+    if (phoneNumber.length < 9) return phoneNumber;
     return '${phoneNumber.substring(0, 4)}****${phoneNumber.substring(phoneNumber.length - 4)}';
   }
 
-  // Placeholder untuk fungsi unggah foto
   void _uploadProfilePicture() {
     print('Buka galeri untuk unggah foto profil');
-    // Implementasi real akan melibatkan image_picker package dan upload ke server
   }
 
   @override
@@ -62,14 +61,14 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Bagian Atas: Profil Pengguna (Foto, Nama, Nomor HP)
+              // Bagian Atas: Info Profil (Foto, Nama, Role, Nomor HP Masking)
               Center(
                 child: Column(
                   children: [
                     Stack(
                       children: [
                         CircleAvatar(
-                          radius: 60,
+                          radius: 40, // Radius lebih kecil
                           backgroundColor: Colors.deepPurple.shade100,
                           backgroundImage: widget.userPhotoUrl != null && widget.userPhotoUrl!.isNotEmpty
                               ? CachedNetworkImageProvider(widget.userPhotoUrl!) as ImageProvider<Object>?
@@ -77,7 +76,7 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
                           child: widget.userPhotoUrl == null || widget.userPhotoUrl!.isEmpty
                               ? Icon(
                             Icons.person,
-                            size: 60,
+                            size: 40, // Ukuran ikon lebih kecil
                             color: Colors.deepPurple.shade700,
                           )
                               : null,
@@ -88,11 +87,11 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
                           child: InkWell(
                             onTap: _uploadProfilePicture,
                             child: CircleAvatar(
-                              radius: 18,
+                              radius: 14, // Ukuran tombol kamera lebih kecil
                               backgroundColor: Colors.deepPurple,
                               child: const Icon(
                                 Icons.camera_alt,
-                                size: 18,
+                                size: 14, // Ukuran ikon kamera lebih kecil
                                 color: Colors.white,
                               ),
                             ),
@@ -100,96 +99,97 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12), // Jarak disesuaikan
                     Text(
-                      widget.userName, // Menggunakan nama pengguna dari properti widget
+                      widget.userName,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _maskPhoneNumber(widget.userPhoneNumber), // Menggunakan nomor HP dari properti widget
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      'Role: ${widget.userRole}', // Menampilkan Role Pengguna
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      widget.userEmail, // Menampilkan email
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      _maskPhoneNumber(widget.userPhoneNumber), // Menggunakan nomor HP dari properti widget
+                      style: const TextStyle(fontSize: 16, color: Colors.black54), // Warna hitam 54
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Bagian Tengah: Kotak Navigasi (Grid 2x2 yang Lebih Kecil)
+              // Bagian Tengah: Kotak Navigasi "Kontrol Cepat Transaksi" (Grid 2x2)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0.0), // Menyesuaikan padding untuk efek lebih luas
-                child: GridView.count(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0), // Padding horizontal lebih besar
+                child: GridView.count( // Menggunakan GridView.count karena tidak memerlukan builder untuk data dinamis di sini
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 2,
                   crossAxisSpacing: 16.0,
                   mainAxisSpacing: 16.0,
-                  childAspectRatio: 1.8, // Menyesuaikan rasio aspek agar kotak lebih kecil
+                  childAspectRatio: 1.5, // Menyesuaikan rasio aspek untuk kotak lebih compact
                   children: [
                     _buildNavigationCard(
                       context,
                       icon: Icons.history,
-                      title: 'Riwayat',
+                      title: 'Riwayat Pesanan', // Teks diubah
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RiwayatScreen())),
                     ),
                     _buildNavigationCard(
                       context,
-                      icon: Icons.account_balance_wallet,
-                      title: 'Saldo Anda',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SaldoAndaScreen())),
+                      icon: Icons.design_services, // Ikon baru
+                      title: 'Desain Saya',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DesainSayaScreen())),
                     ),
                     _buildNavigationCard(
                       context,
-                      icon: Icons.receipt, // Ikon baru untuk Belum Bayar
-                      title: 'Belum Bayar',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BelumDibayarScreen())),
+                      icon: Icons.receipt_long, // Ikon baru
+                      title: 'Menunggu Bayar', // Teks diubah
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MenungguBayarScreen())),
                     ),
                     _buildNavigationCard(
                       context,
-                      icon: Icons.local_shipping,
-                      title: 'Di Proses',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DiProsesScreen())),
+                      icon: Icons.production_quantity_limits, // Ikon baru
+                      title: 'Dalam Proses', // Teks diubah
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DalamProsesScreen())),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Bagian Bawah: Opsi Pengaturan (Vertical List)
+              // Bagian Bawah: Opsi Pengaturan & Bantuan (Daftar Vertikal)
               Column(
                 children: [
                   _buildSettingTile(
                     context,
-                    icon: Icons.settings, // Ikon baru untuk Profile Setting
+                    icon: Icons.settings,
                     title: 'Profile Setting',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileSettingScreen())),
                   ),
-                  const SizedBox(height: 10),
+                  const Divider(), // Divider
                   _buildSettingTile(
                     context,
                     icon: Icons.notifications,
                     title: 'Pengaturan Notifikasi',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen())),
                   ),
-                  const SizedBox(height: 10),
+                  const Divider(), // Divider
                   _buildSettingTile(
                     context,
                     icon: Icons.chat,
                     title: 'Chat Piksel.mos',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPikselMosScreen())),
                   ),
-                  const SizedBox(height: 10),
+                  const Divider(), // Divider
                   _buildSettingTile(
                     context,
                     icon: Icons.help_outline,
                     title: 'Pusat Bantuan',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PusatBantuanScreen())),
                   ),
+                  const Divider(), // Divider
                   const SizedBox(height: 24),
                   // Tombol Logout
                   ListTile(
@@ -240,6 +240,8 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), // Ukuran teks disesuaikan
+                maxLines: 2, // Batasi teks menjadi 2 baris
+                overflow: TextOverflow.ellipsis, // Tambahkan ellipsis jika melebihi 2 baris
               ),
             ],
           ),
@@ -254,14 +256,22 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
     required String title,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.deepPurple),
-        title: Text(title),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-        onTap: onTap,
+    return InkWell( // Menggunakan InkWell untuk efek visual pada tile
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.0),
+      child: Card(
+        elevation: 0, // Card tanpa elevasi agar terlihat seperti ListTile biasa
+        margin: EdgeInsets.zero, // Hilangkan margin default Card
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0), // Padding vertikal konsisten
+          child: ListTile(
+            leading: Icon(icon, color: Colors.deepPurple),
+            title: Text(title),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
+            // onTap dihapus dari ListTile karena sudah ditangani oleh InkWell Card
+          ),
+        ),
       ),
     );
   }
