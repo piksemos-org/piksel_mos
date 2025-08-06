@@ -1,248 +1,127 @@
-// lib/screens/home/akun_saya_screen.dart
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:piksel_mos/screens/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Import halaman-halaman navigasi dari lokasi baru
-import 'package:piksel_mos/screens/profile/navigasi/riwayat_screen.dart';
-import 'package:piksel_mos/screens/profile/navigasi/desain_saya_screen.dart';
-import 'package:piksel_mos/screens/profile/navigasi/menunggu_bayar_screen.dart';
+// Import placeholder screens
+import 'package:piksel_mos/screens/profile/navigasi/menunggu_pembayaran_screen.dart';
 import 'package:piksel_mos/screens/profile/navigasi/dalam_proses_screen.dart';
-
-// Import halaman-halaman pengaturan dari lokasi baru
-import 'package:piksel_mos/screens/profile/settings/profile_setting_screen.dart';
-import 'package:piksel_mos/screens/profile/settings/notification_settings_screen.dart';
-import 'package:piksel_mos/screens/profile/settings/chat_piksel_mos_screen.dart';
-import 'package:piksel_mos/screens/profile/settings/pusat_bantuan_screen.dart';
+import 'package:piksel_mos/screens/profile/navigasi/desain_saya_screen.dart';
+import 'package:piksel_mos/screens/profile/navigasi/alamat_tersimpan_screen.dart';
+import 'package:piksel_mos/screens/profile/navigasi/pengaturan_akun_screen.dart';
 
 
-class AkunSayaScreen extends StatefulWidget {
-  final String userName;
-  final String userEmail;
-  final String userPhoneNumber;
-  final String userRole; // Tambahan: Role pengguna
-  final String? userPhotoUrl;
+class AkunSayaScreen extends StatelessWidget {
+  // Data pengguna (sementara di-hardcode, nanti diambil dari state management)
+  final String userName = "Akbar Dwi Mulya";
+  final bool isEmailVerified = false; // Ganti menjadi 'true' untuk menyembunyikan banner
 
-  const AkunSayaScreen({
-    super.key,
-    this.userName = 'Nama Pengguna',
-    this.userEmail = 'email@contoh.com',
-    this.userPhoneNumber = '081234567890',
-    this.userRole = 'Customer', // Default placeholder role
-    this.userPhotoUrl,
-  });
+  const AkunSayaScreen({super.key});
 
-  @override
-  State<AkunSayaScreen> createState() => _AkunSayaScreenState();
-}
+  // Fungsi untuk Logout
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Hapus semua data sesi
 
-class _AkunSayaScreenState extends State<AkunSayaScreen> {
-  String _maskPhoneNumber(String phoneNumber) {
-    if (phoneNumber.length < 9) return phoneNumber;
-    return '${phoneNumber.substring(0, 4)}****${phoneNumber.substring(phoneNumber.length - 4)}';
-  }
-
-  void _uploadProfilePicture() {
-    print('Buka galeri untuk unggah foto profil');
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 4a. Layout Utama
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Profil Saya'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 1,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Bagian Atas: Info Profil (Foto, Nama, Role, Nomor HP Masking)
-              Center(
-                child: Column(
-                  children: [
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 40, // Radius lebih kecil
-                          backgroundColor: Colors.deepPurple.shade100,
-                          backgroundImage: widget.userPhotoUrl != null && widget.userPhotoUrl!.isNotEmpty
-                              ? CachedNetworkImageProvider(widget.userPhotoUrl!) as ImageProvider<Object>?
-                              : null,
-                          child: widget.userPhotoUrl == null || widget.userPhotoUrl!.isEmpty
-                              ? Icon(
-                            Icons.person,
-                            size: 40, // Ukuran ikon lebih kecil
-                            color: Colors.deepPurple.shade700,
-                          )
-                              : null,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: InkWell(
-                            onTap: _uploadProfilePicture,
-                            child: CircleAvatar(
-                              radius: 14, // Ukuran tombol kamera lebih kecil
-                              backgroundColor: Colors.deepPurple,
-                              child: const Icon(
-                                Icons.camera_alt,
-                                size: 14, // Ukuran ikon kamera lebih kecil
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12), // Jarak disesuaikan
-                    Text(
-                      widget.userName,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Role: ${widget.userRole}', // Menampilkan Role Pengguna
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _maskPhoneNumber(widget.userPhoneNumber), // Menggunakan nomor HP dari properti widget
-                      style: const TextStyle(fontSize: 16, color: Colors.black54), // Warna hitam 54
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
+              // 4b. Kartu Nama Digital
+              _buildProfileCard(context),
+              const SizedBox(height: 16),
 
-              // Bagian Tengah: Kotak Navigasi "Kontrol Cepat Transaksi" (Grid 2x2)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0), // Padding horizontal lebih besar
-                child: GridView.count( // Menggunakan GridView.count karena tidak memerlukan builder untuk data dinamis di sini
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 1.5, // Menyesuaikan rasio aspek untuk kotak lebih compact
-                  children: [
-                    _buildNavigationCard(
-                      context,
-                      icon: Icons.history,
-                      title: 'Riwayat Pesanan', // Teks diubah
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RiwayatScreen())),
-                    ),
-                    _buildNavigationCard(
-                      context,
-                      icon: Icons.design_services, // Ikon baru
-                      title: 'Desain Saya',
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DesainSayaScreen())),
-                    ),
-                    _buildNavigationCard(
-                      context,
-                      icon: Icons.receipt_long, // Ikon baru
-                      title: 'Menunggu Bayar', // Teks diubah
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MenungguBayarScreen())),
-                    ),
-                    _buildNavigationCard(
-                      context,
-                      icon: Icons.production_quantity_limits, // Ikon baru
-                      title: 'Dalam Proses', // Teks diubah
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DalamProsesScreen())),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
+              // 4c. Banner Verifikasi (Kondisional)
+              if (!isEmailVerified) _buildVerificationBanner(context),
 
-              // Bagian Bawah: Opsi Pengaturan & Bantuan (Daftar Vertikal)
-              Column(
-                children: [
-                  _buildSettingTile(
+              // 4d. Grup Menu
+              _buildMenuGroup(
+                context: context,
+                title: 'Aktivitas Pesanan',
+                items: [
+                  _buildMenuTile(
                     context,
-                    icon: Icons.settings,
-                    title: 'Profile Setting',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileSettingScreen())),
+                    icon: Icons.wallet_outlined,
+                    title: 'Menunggu Pembayaran',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MenungguPembayaranScreen())),
                   ),
-                  const Divider(), // Divider
-                  _buildSettingTile(
+                  _buildMenuTile(
                     context,
-                    icon: Icons.notifications,
-                    title: 'Pengaturan Notifikasi',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen())),
-                  ),
-                  const Divider(), // Divider
-                  _buildSettingTile(
-                    context,
-                    icon: Icons.chat,
-                    title: 'Chat Piksel.mos',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPikselMosScreen())),
-                  ),
-                  const Divider(), // Divider
-                  _buildSettingTile(
-                    context,
-                    icon: Icons.help_outline,
-                    title: 'Pusat Bantuan',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PusatBantuanScreen())),
-                  ),
-                  const Divider(), // Divider
-                  const SizedBox(height: 24),
-                  // Tombol Logout
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.red, size: 18),
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                            (Route<dynamic> route) => false,
-                      );
-                      print('User Logout');
-                    },
+                    icon: Icons.sync,
+                    title: 'Dalam Proses',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DalamProsesScreen())),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Widget pembangun untuk kartu navigasi di bagian tengah
-  Widget _buildNavigationCard(BuildContext context, {
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0), // Padding disesuaikan agar lebih kecil
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 30, color: Colors.deepPurple), // Ukuran ikon disesuaikan
-              const SizedBox(height: 4), // Spasi dikurangi
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), // Ukuran teks disesuaikan
-                maxLines: 2, // Batasi teks menjadi 2 baris
-                overflow: TextOverflow.ellipsis, // Tambahkan ellipsis jika melebihi 2 baris
+              const SizedBox(height: 16),
+              _buildMenuGroup(
+                context: context,
+                title: 'Aset & Data Saya',
+                items: [
+                  _buildMenuTile(
+                    context,
+                    icon: Icons.image_outlined,
+                    title: 'Desain Saya',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DesainSayaScreen())),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+              _buildMenuGroup(
+                context: context,
+                title: 'History',
+                items: [
+                  _buildMenuTile(
+                    context,
+                    icon: Icons.location_on_outlined,
+                    title: 'Alamat Tersimpan',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AlamatTersimpanScreen())),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildMenuGroup(
+                context: context,
+                title: 'Pengaturan & Bantuan',
+                items: [
+                  _buildMenuTile(
+                    context,
+                    icon: Icons.settings_outlined,
+                    title: 'Pengaturan Akun',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PengaturanAkunScreen())),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // 4e. Tombol Logout
+              Card(
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text('Logout', style: TextStyle(color: Colors.red)),
+                  onTap: () => _logout(context),
+                ),
+              )
             ],
           ),
         ),
@@ -250,29 +129,136 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
     );
   }
 
-  // Widget pembangun untuk item pengaturan di bagian bawah
-  Widget _buildSettingTile(BuildContext context, {
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell( // Menggunakan InkWell untuk efek visual pada tile
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
-      child: Card(
-        elevation: 0, // Card tanpa elevasi agar terlihat seperti ListTile biasa
-        margin: EdgeInsets.zero, // Hilangkan margin default Card
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0), // Padding vertikal konsisten
-          child: ListTile(
-            leading: Icon(icon, color: Colors.deepPurple),
-            title: Text(title),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-            // onTap dihapus dari ListTile karena sudah ditangani oleh InkWell Card
+  // Widget helper untuk UI
+  Widget _buildProfileCard(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      child: Row(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.deepPurple,
+            child: const Center(
+              child: Text(
+                'AD',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userName,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text('Customer Terverifikasi',
+                      style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () {
+                print('Tombol Edit Profil ditekan');
+              },
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.grey.shade200,
+                foregroundColor: Colors.deepPurple,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerificationBanner(BuildContext context) {
+    return Card(
+      color: Colors.amber.shade100,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.amber.shade800),
+            const SizedBox(width: 12),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: DefaultTextStyle.of(context)
+                      .style
+                      .copyWith(color: Colors.black87),
+                  children: <TextSpan>[
+                    const TextSpan(text: 'Email Anda belum diverifikasi. '),
+                    TextSpan(
+                        text: 'Verifikasi sekarang',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            print('Navigasi ke halaman verifikasi email...');
+                          }),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMenuGroup({
+    required BuildContext context,
+    required String title,
+    required List<Widget> items,
+  }) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          ),
+          ...items,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuTile(BuildContext context, {
+    required IconData icon,
+    required String title,
+    VoidCallback? onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.deepPurple),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: onTap,
     );
   }
 }
