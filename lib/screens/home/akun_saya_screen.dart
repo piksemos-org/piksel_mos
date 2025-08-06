@@ -33,7 +33,6 @@ class AkunSayaScreen extends StatefulWidget {
 }
 
 class _AkunSayaScreenState extends State<AkunSayaScreen> {
-  // State untuk mengelola foto profil dan status upload
   String? _currentPhotoUrl;
   bool _isUploading = false;
 
@@ -43,7 +42,6 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
     _currentPhotoUrl = widget.userPhotoUrl;
   }
 
-  // 4a & 4b. Fungsi untuk memilih dan mengunggah gambar
   Future<void> _pickAndUploadImage() async {
     setState(() {
       _isUploading = true;
@@ -51,22 +49,17 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
 
     try {
       final ImagePicker picker = ImagePicker();
-      // Buka galeri untuk memilih gambar
       final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        // Jika pengguna memilih gambar, lanjutkan proses upload
         var url = Uri.parse('http://178.128.18.30:3000/api/users/upload-photo');
         var request = http.MultipartRequest('POST', url);
 
-        // Tambahkan file gambar ke request
         request.files.add(await http.MultipartFile.fromPath(
           'profile_picture',
           pickedFile.path,
         ));
-
-        // Tambahkan ID pengguna (dummy untuk sekarang)
-        request.fields['userId'] = '1';
+        request.fields['userId'] = '1'; // Dummy user ID
 
         final streamedResponse = await request.send();
         final response = await http.Response.fromStream(streamedResponse);
@@ -74,10 +67,12 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
         if (mounted) {
           if (response.statusCode == 200) {
             final responseData = json.decode(response.body);
-            // 4c. Update UI setelah sukses
+            // --- PERBAIKAN UTAMA DI SINI ---
+            // Membaca URL dari dalam "amplop" data
             setState(() {
-              _currentPhotoUrl = responseData['photoUrl'];
+              _currentPhotoUrl = responseData['data']['photoUrl'];
             });
+            // --- AKHIR PERBAIKAN ---
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Foto profil berhasil diperbarui!'), backgroundColor: Colors.green),
             );
@@ -94,7 +89,6 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
           const SnackBar(content: Text('Terjadi kesalahan. Coba lagi.'), backgroundColor: Colors.red),
         );
       }
-      print('Error picking/uploading image: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -177,9 +171,9 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
     );
   }
 
-  // --- WIDGET HELPER DIREVISI ---
   Widget _buildProfileCard(BuildContext context) {
     final initials = widget.userName.isNotEmpty ? widget.userName.trim().split(' ').map((l) => l[0]).take(2).join() : '';
+    final fullPhotoUrl = _currentPhotoUrl != null ? 'http://178.128.18.30:3000$_currentPhotoUrl' : null;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -187,24 +181,25 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
       elevation: 0,
       child: Row(
         children: [
-          // 4c. Implementasi di UI
           GestureDetector(
             onTap: _isUploading ? null : _pickAndUploadImage,
             child: Container(
               width: 100,
               height: 100,
-              color: Colors.deepPurple,
-              // Tumpuk loading indicator di atas gambar
+              decoration: BoxDecoration(
+                  color: Colors.deepPurple,
+                  borderRadius: BorderRadius.circular(16)
+              ),
+              clipBehavior: Clip.antiAlias,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Tampilkan gambar jika ada URL, jika tidak, tampilkan inisial
-                  if (_currentPhotoUrl != null)
+                  if (fullPhotoUrl != null)
                     CachedNetworkImage(
-                      imageUrl: _currentPhotoUrl!,
+                      imageUrl: fullPhotoUrl,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Colors.white)),
-                      errorWidget: (context, url, error) => Center(child: Icon(Icons.error, color: Colors.white)),
+                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(color: Colors.white)),
+                      errorWidget: (context, url, error) => const Center(child: Icon(Icons.error, color: Colors.white)),
                     )
                   else
                     Center(
@@ -213,7 +208,7 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
                         style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
                       ),
                     ),
-                  // Tampilkan loading indicator
+
                   if (_isUploading)
                     Container(
                       color: Colors.black.withOpacity(0.5),
@@ -255,7 +250,6 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
     );
   }
 
-  // (Fungsi helper lainnya tidak berubah)
   Widget _buildVerificationBanner(BuildContext context) {
     return Card(
       color: Colors.amber.shade100,
