@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:piksel_mos/config/api_constants.dart'; // 1. Impor file konfigurasi baru
+import 'package:piksel_mos/config/api_constants.dart';
 
 class FeedCardWidget extends StatefulWidget {
   final String imageUrl;
