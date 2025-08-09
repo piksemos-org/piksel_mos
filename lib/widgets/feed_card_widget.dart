@@ -22,7 +22,7 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
   @override
   Widget build(BuildContext context) {
     // 2. Buat URL gambar yang lengkap
-    final String fullImageUrl = '${api_constants.baseUrl}${widget.imageUrl}';
+    final String fullImageUrl = '${ApiConstants.baseUrl}${widget.imageUrl}';
 
     final textPainter = TextPainter(
       text: TextSpan(text: widget.description, style: Theme.of(context).textTheme.bodyMedium),
