@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:piksel_mos/screens/auth/register_screen.dart';
 import 'package:piksel_mos/screens/auth/forgot_password_screen.dart';
 import 'package:piksel_mos/screens/home/main_screen_wrapper.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://178.128.18.30:3000/api/auth/login'),
+        Uri.parse('ApiConstants.login/api/auth/login'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

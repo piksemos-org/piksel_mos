@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:piksel_mos/screens/auth/reset_password_screen.dart';
-import 'package:piksel_mos/utils/validators.dart'; // 1. Impor file validators
+import 'package:piksel_mos/utils/validators.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -34,7 +35,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       });
 
       try {
-        final url = Uri.parse('http://178.128.18.30:3000/api/auth/forgot-password');
+        final url = Uri.parse(ApiConstants.forgotPassword);
         final headers = {'Content-Type': 'application/json; charset=UTF-8'};
         final body = json.encode({'emailOrPhone': _emailPhoneController.text});
 

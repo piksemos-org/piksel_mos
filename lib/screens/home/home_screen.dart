@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:piksel_mos/widgets/feed_card_widget.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 // Callback untuk memberitahu wrapper agar mengubah tab
 typedef TabCallback = void Function(int index);
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final url = Uri.parse('http://178.128.18.30:3000/api/feed');
+      final url = Uri.parse('ApiConstants.homeScreen/api/feed');
       final response = await http.get(url).timeout(const Duration(seconds: 20));
 
       if (mounted) {

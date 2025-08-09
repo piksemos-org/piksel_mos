@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:piksel_mos/screens/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 // Import placeholder screens
 import 'package:piksel_mos/screens/profile/navigasi/menunggu_pembayaran_screen.dart';
@@ -52,7 +53,7 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
       final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        var url = Uri.parse('http://178.128.18.30:3000/api/users/upload-photo');
+        var url = Uri.parse('ApiConstants.uploadPhoto/api/users/upload-photo');
         var request = http.MultipartRequest('POST', url);
 
         request.files.add(await http.MultipartFile.fromPath(
@@ -173,7 +174,7 @@ class _AkunSayaScreenState extends State<AkunSayaScreen> {
 
   Widget _buildProfileCard(BuildContext context) {
     final initials = widget.userName.isNotEmpty ? widget.userName.trim().split(' ').map((l) => l[0]).take(2).join() : '';
-    final fullPhotoUrl = _currentPhotoUrl != null ? 'http://178.128.18.30:3000$_currentPhotoUrl' : null;
+    final fullPhotoUrl = _currentPhotoUrl != null ? 'ApiConstants.akunSayaScreen$_currentPhotoUrl' : null;
 
     return Card(
       clipBehavior: Clip.antiAlias,

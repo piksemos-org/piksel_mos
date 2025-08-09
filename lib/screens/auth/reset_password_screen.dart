@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:piksel_mos/screens/auth/login_screen.dart';
-import 'package:piksel_mos/utils/validators.dart'; // 1. Impor file validators
+import 'package:piksel_mos/utils/validators.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String emailOrPhone;
@@ -46,7 +47,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       });
 
       try {
-        final url = Uri.parse('http://178.128.18.30:3000/api/auth/reset-password');
+        final url = Uri.parse(ApiConstants.resetPassword);
         final headers = {'Content-Type': 'application/json; charset=UTF-8'};
         final body = json.encode({
           'emailOrPhone': widget.emailOrPhone,

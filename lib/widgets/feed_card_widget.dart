@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:piksel_mos/config/api_constants.dart'; // 1. Impor file konfigurasi baru
 
 class FeedCardWidget extends StatefulWidget {
   final String imageUrl;
@@ -20,12 +21,14 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Logika untuk mendeteksi apakah teks perlu dipotong
+    // 2. Buat URL gambar yang lengkap
+    final String fullImageUrl = '${api_constants.baseUrl}${widget.imageUrl}';
+
     final textPainter = TextPainter(
       text: TextSpan(text: widget.description, style: Theme.of(context).textTheme.bodyMedium),
       maxLines: 3,
       textDirection: TextDirection.ltr,
-    )..layout(maxWidth: MediaQuery.of(context).size.width - 56); // Lebar kartu dikurangi padding
+    )..layout(maxWidth: MediaQuery.of(context).size.width - 56);
 
     final isTextLong = textPainter.didExceedMaxLines;
 
@@ -37,9 +40,8 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Gambar Postingan
           CachedNetworkImage(
-            imageUrl: widget.imageUrl,
+            imageUrl: fullImageUrl, // 3. Gunakan URL yang sudah lengkap
             placeholder: (context, url) => const AspectRatio(
               aspectRatio: 16 / 9,
               child: Center(child: CircularProgressIndicator()),
@@ -51,7 +53,6 @@ class _FeedCardWidgetState extends State<FeedCardWidget> {
             fit: BoxFit.cover,
             width: double.infinity,
           ),
-          // Deskripsi dan Tombol Interaksi
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(

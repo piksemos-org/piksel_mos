@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:piksel_mos/screens/auth/verification_screen.dart';
 import 'package:piksel_mos/utils/validators.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -47,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
 
       try {
-        final url = Uri.parse('http://178.128.18.30:3000/api/auth/register');
+        final url = Uri.parse('ApiConstants.register/api/auth/register');
         final headers = {'Content-Type': 'application/json; charset=UTF-8'};
         final body = json.encode({
           'name': _nameController.text,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:piksel_mos/screens/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:piksel_mos/config/api_constants.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -78,7 +79,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
 
     try {
-      final url = Uri.parse('http://178.128.18.30:3000/api/auth/verify-otp');
+      final url = Uri.parse(ApiConstants.verifyOtp);
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({
         'phoneNumber': widget.phoneNumber,
@@ -132,7 +133,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (!_canResend) return;
 
     try {
-      final url = Uri.parse('http://178.128.18.30:3000/api/auth/resend-otp');
+      final url = Uri.parse(ApiConstants.resendOtp);
       final headers = {'Content-Type': 'application/json; charset=UTF-8'};
       final body = json.encode({'phoneNumber': widget.phoneNumber});
 
